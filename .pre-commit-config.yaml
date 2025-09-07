@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.4.7
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run pytest with uv
+        entry: uv run pytest
+        language: system
+        types: [python]
+        pass_filenames: false

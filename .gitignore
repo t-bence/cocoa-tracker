@@ -13,3 +13,4 @@ wheels/
 package/
 .DS_Store
 my_deployment_package.zip
+.pytest_cache/

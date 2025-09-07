@@ -1,37 +1,15 @@
 import datetime as dt
+import os
 
 import requests
 from bs4 import BeautifulSoup
 
+from src.functions import get_month_number, get_year
+
 url = "https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/"
-TOPIC_ARN = "arn:aws:sns:eu-central-1:068325471140:Kakaokoncert"
 
 
-MONTHS = {
-    "january": 1,
-    "february": 2,
-    "march": 3,
-    "april": 4,
-    "may": 5,
-    "june": 6,
-    "july": 7,
-    "august": 8,
-    "september": 9,
-    "october": 10,
-    "november": 11,
-    "december": 12,
-}
-
-
-def get_month_number(month_name: str) -> int:
-    return MONTHS[month_name.strip().lower()]
-
-
-def get_year(year: str) -> int:
-    if year.endswith("."):
-        return int(year[:-1])
-    else:
-        return int(year)
+TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
 
 
 def list_article_tags_content(url: str) -> list[dt.date]:
@@ -68,8 +46,8 @@ def send_message(dates: list[dt.date]) -> None:
     formatted_dates = [date.strftime("%Y-%m-%d") for date in dates]
 
     message = f"""Van hely kakaókoncertre!
-        Dátum:
-        {formatted_dates}"""
+    Dátum:
+    {formatted_dates}"""
 
     sns.publish(
         TopicArn=TOPIC_ARN,
@@ -78,7 +56,7 @@ def send_message(dates: list[dt.date]) -> None:
 
 
 def lambda_handler(event, context):
-    dates = print(list_article_tags_content(url))
+    dates = list_article_tags_content(url)
     if dates:
         send_message(dates)
 
