@@ -1,6 +1,9 @@
 name: Test with uv and pytest
 
 on:
+  push:
+    branches: 
+      - main
   pull_request:
     types:
       - synchronize
