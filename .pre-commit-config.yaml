@@ -4,12 +4,3 @@ repos:
     hooks:
       - id: ruff
         args: ["--fix"]
-  - repo: local
-    hooks:
-      - id: pytest
-        name: Run pytest with uv
-        entry: uv run pytest
-        language: system
-        types: [python]
-        pass_filenames: false
-        files: .

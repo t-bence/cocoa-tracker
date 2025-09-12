@@ -25,5 +25,7 @@ jobs:
         run: pip install uv
       - name: Install dependencies with uv
         run: uv sync --dev
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
       - name: Run tests with uv and pytest
         run: uv run pytest
