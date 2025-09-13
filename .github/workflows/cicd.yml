@@ -1,0 +1,65 @@
+name: Test and deploy
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    types:
+      - synchronize
+      - opened
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install uv
+      - name: Install uv
+        run: pip install uv
+
+      # Run unit tests (with dev deps, so boto3 is available locally)
+      - name: Install dev dependencies
+        run: uv sync --dev
+
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
+
+      - name: Run tests with uv and pytest
+        run: uv run pytest
+
+      # Build deployment package
+      - name: Build Lambda package
+        run: |
+          rm -rf package
+          mkdir package
+          # Export runtime deps only (exclude boto3, dev, etc.)
+          uv pip export --without-hashes --format=requirements.txt > requirements.txt
+          uv pip install -r requirements.txt --target package/
+          cd package
+          zip -r ../my_deployment_package.zip .
+          cd ..
+          zip my_deployment_package.zip lambda_function.py
+          zip -r my_deployment_package.zip ./src
+
+      # Deploy to AWS Lambda
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-east-1  # change to your region
+
+      # - name: Deploy Lambda
+      #   run: |
+      #     aws lambda update-function-code \
+      #       --function-name my-lambda-func \
+      #       --zip-file fileb://lambda_package.zip
