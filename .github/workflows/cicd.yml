@@ -42,8 +42,7 @@ jobs:
           rm -rf package
           mkdir package
           # Export runtime deps only (exclude boto3, dev, etc.)
-          uv pip export --without-hashes --format=requirements.txt > requirements.txt
-          uv pip install -r requirements.txt --target package/
+          uv pip install --target package/ .
           cd package
           zip -r ../my_deployment_package.zip .
           cd ..
