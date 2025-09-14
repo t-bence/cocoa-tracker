@@ -50,15 +50,15 @@ jobs:
           zip -r my_deployment_package.zip ./src
 
       # Deploy to AWS Lambda
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: us-east-1  # change to your region
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1  # change to your region
 
-      # - name: Deploy Lambda
-      #   run: |
-      #     aws lambda update-function-code \
-      #       --function-name my-lambda-func \
-      #       --zip-file fileb://lambda_package.zip
+      - name: Deploy Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name CocoaTracker \
+            --zip-file fileb://my_deployment_package.zip
