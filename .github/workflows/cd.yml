@@ -1,13 +1,7 @@
-name: Test and deploy
+name: Deploy
 on:
   push:
     branches: 
-      - main
-  pull_request:
-    types:
-      - synchronize
-      - opened
-    branches:
       - main
 
 jobs:
@@ -29,12 +23,6 @@ jobs:
       # Run unit tests (with dev deps, so boto3 is available locally)
       - name: Install dev dependencies
         run: uv sync --dev
-
-      - name: Run pre-commit hooks
-        run: uv run pre-commit run --all-files
-
-      - name: Run tests with uv and pytest
-        run: uv run pytest
 
       # Build deployment package
       - name: Build Lambda package
