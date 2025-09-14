@@ -12,8 +12,8 @@ url = "https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/
 
 TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def list_article_tags_content(url: str) -> list[dt.date]:
