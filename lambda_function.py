@@ -16,16 +16,9 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def list_article_tags_content(url: str) -> list[dt.date]:
-    logger.info(f"Requesting URL: {url}")
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-    except Exception as e:
-        logger.error(f"Failed to fetch URL {url}: {e}")
-        return []
-    soup = BeautifulSoup(response.text, "html.parser")
-    articles = soup.find_all("article")
+def parse_html_content(html_content: str) -> list[dt.date]:
+    soup = BeautifulSoup(html_content, "html.parser")
+    articles = soup.find_all("article", class_="event")
     logger.info(f"Found {len(articles)} articles")
 
     dates: list[dt.date] = []
@@ -36,7 +29,7 @@ def list_article_tags_content(url: str) -> list[dt.date]:
             continue
         event_name = event_fn_div.get_text(strip=True)
         if "sold out" in event_name.lower():
-            logger.info(f"Skipping sold out event: {event_name}")
+            # logger.info(f"Skipping sold out event: {event_name}")
             continue
         year_div = article.find("div", class_="year")
         month_div = article.find("div", class_="month")
@@ -53,6 +46,17 @@ def list_article_tags_content(url: str) -> list[dt.date]:
             continue
     logger.info(f"Returning {len(dates)} dates")
     return dates
+
+
+def list_article_tags_content(url: str) -> list[dt.date]:
+    logger.info(f"Requesting URL: {url}")
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except Exception as e:
+        logger.error(f"Failed to fetch URL {url}: {e}")
+        return []
+    return parse_html_content(response.text)
 
 
 def send_message(dates: list[dt.date]) -> None:
@@ -87,10 +91,10 @@ def lambda_handler(event, context):
     cache = DateCache(bucket=bucket, file=file)
     old_dates = cache.load_old_dates()
 
-    dates = set(current_dates) - set(old_dates)
-    if dates:
+    new_dates = list(set(current_dates) - set(old_dates))
+    if new_dates:
         logger.info("Dates found, sending message")
-        send_message(dates)
+        send_message(new_dates)
         cache.save_dates(current_dates)
     else:
         logger.info("No dates found, nothing to send")
