@@ -61,10 +61,10 @@ def send_message(dates: list[dt.date]) -> None:
     logger.info(f"Preparing to send message for {len(dates)} dates")
     sns = boto3.client("sns")
 
-    formatted_dates = [date.strftime("%Y-%m-%d") for date in dates]
+    formatted_dates: str = "\n".join([date.strftime("%Y-%m-%d") for date in dates])
 
     message = f"""Van hely kakaókoncertre!
-    Dátum:
+    Dátumok:
     {formatted_dates}"""
 
     try:
