@@ -1,8 +1,8 @@
 import datetime as dt
 from pathlib import Path
 
-from lambda_function import parse_html_content
 from src.functions import get_month_number, get_year
+from src.scraper import parse_html_content
 
 
 def test_get_month_number():
