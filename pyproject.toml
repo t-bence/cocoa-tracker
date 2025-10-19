@@ -13,8 +13,10 @@ dependencies = [
 dev = [
     "boto3>=1.40.30",
     "commitizen>=4.9.1",
+    "mypy>=1.11.2",
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
+    "types-requests>=2.32.0",
 ]
 
 [tool.commitizen]

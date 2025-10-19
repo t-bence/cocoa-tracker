@@ -12,20 +12,24 @@ def _strings_to_dates(strings: list[str]) -> list[dt.date]:
     return [dt.date.fromisoformat(x) for x in strings]
 
 
-class DateCache:
-    def __init__(self, bucket: str, file: str):
-        self.bucket = bucket
-        self.key = file
-
-    def load_old_dates(self) -> list[dt.date]:
-        s3 = boto3.client("s3")
-        try:
-            obj = s3.get_object(Bucket=self.bucket, Key=self.key)
-            data = json.loads(obj["Body"].read())
-        except s3.exceptions.NoSuchKey:
-            return []
+def read_dates_from_s3(bucket: str, key: str) -> list[dt.date]:
+    s3 = boto3.client("s3")
+    try:
+        obj = s3.get_object(Bucket=bucket, Key=key)
+        data = json.loads(obj["Body"].read())
         return _strings_to_dates(data)
+    except s3.exceptions.NoSuchKey:
+        return []
 
-    def save_dates(self, dates: list[dt.date]):
-        s3 = boto3.client("s3")
-        s3.put_object(Bucket=self.bucket, Key=self.key, Body=json.dumps(_dates_to_strings(dates)))
+
+def write_dates_to_s3(bucket: str, key: str, dates: list[dt.date]) -> None:
+    s3 = boto3.client("s3")
+    s3.put_object(Bucket=bucket, Key=key, Body=json.dumps(_dates_to_strings(dates)))
+
+
+class DateCache:
+    def __init__(self, old_dates: list[dt.date]):
+        self.old_dates = old_dates
+
+    def find_new_dates(self, current_dates: list[dt.date]) -> list[dt.date]:
+        return list(set(current_dates) - set(self.old_dates))

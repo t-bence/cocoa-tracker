@@ -1,6 +1,6 @@
 import datetime as dt
 
-from src.storage import _dates_to_strings, _strings_to_dates
+from src.storage import DateCache, _dates_to_strings, _strings_to_dates
 
 
 def test_dates_to_strings_and_back():
@@ -39,3 +39,57 @@ def test_strings_to_dates():
 def test_empty_list():
     assert _dates_to_strings([]) == []
     assert _strings_to_dates([]) == []
+
+
+def test_finding_new_dates_empty_cache():
+    cache = DateCache(old_dates=[])
+    assert cache.find_new_dates([dt.date(2025, 10, 1)]) == [dt.date(2025, 10, 1)]
+
+
+def test_finding_new_dates_with_existing_dates():
+    old_dates = [dt.date(2025, 10, 1), dt.date(2025, 10, 15)]
+    cache = DateCache(old_dates=old_dates)
+
+    current_dates = [dt.date(2025, 10, 1), dt.date(2025, 10, 15), dt.date(2025, 11, 1)]
+    new_dates = cache.find_new_dates(current_dates)
+
+    assert new_dates == [dt.date(2025, 11, 1)]
+
+
+def test_finding_no_new_dates():
+    old_dates = [dt.date(2025, 10, 1), dt.date(2025, 10, 15)]
+    cache = DateCache(old_dates=old_dates)
+
+    current_dates = [dt.date(2025, 10, 1), dt.date(2025, 10, 15)]
+    new_dates = cache.find_new_dates(current_dates)
+
+    assert new_dates == []
+
+
+def test_finding_multiple_new_dates():
+    old_dates = [dt.date(2025, 10, 1)]
+    cache = DateCache(old_dates=old_dates)
+
+    current_dates = [
+        dt.date(2025, 10, 1),
+        dt.date(2025, 10, 15),
+        dt.date(2025, 11, 1),
+        dt.date(2025, 12, 1),
+    ]
+    new_dates = cache.find_new_dates(current_dates)
+
+    assert set(new_dates) == {
+        dt.date(2025, 10, 15),
+        dt.date(2025, 11, 1),
+        dt.date(2025, 12, 1),
+    }
+
+
+def test_all_dates_are_new():
+    old_dates = [dt.date(2025, 10, 1)]
+    cache = DateCache(old_dates=old_dates)
+
+    current_dates = [dt.date(2025, 11, 1), dt.date(2025, 12, 1)]
+    new_dates = cache.find_new_dates(current_dates)
+
+    assert set(new_dates) == {dt.date(2025, 11, 1), dt.date(2025, 12, 1)}
