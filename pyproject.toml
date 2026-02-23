@@ -20,6 +20,10 @@ dev = [
     "types-requests>=2.32.0",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "$version"

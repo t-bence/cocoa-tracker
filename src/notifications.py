@@ -13,8 +13,10 @@ class NotificationService(ABC):
         pass
 
     def _format_message(self, dates: list[dt.date]) -> str:
-        formatted_dates: str = "\n".join([date.strftime("%Y-%m-%d") for date in dates])
-        return f"""Van hely kakaókoncertre!
+        formatted_dates: str = "\n".join(
+            [f"- {date.strftime('%Y-%m-%d')}" for date in dates]
+        )
+        return f"""**Van hely kakaókoncertre!** 🚀
 Dátumok:
 {formatted_dates}"""
 
