@@ -20,10 +20,6 @@ jobs:
       - name: Install uv
         run: pip install uv
 
-      # Run unit tests (with dev deps, so boto3 is available locally)
-      - name: Install dev dependencies
-        run: uv sync --dev
-
       # Build deployment package
       - name: Build Lambda package
         run: |
