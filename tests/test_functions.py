@@ -1,6 +1,7 @@
-import pytest
 import datetime as dt
 from pathlib import Path
+
+import pytest
 
 from src.functions import get_month_number, get_year
 from src.scraper import parse_html_content

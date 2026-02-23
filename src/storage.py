@@ -2,6 +2,7 @@ import datetime as dt
 import json
 import os
 from abc import ABC, abstractmethod
+from typing import override
 
 # ---------------------------------------------------------------------------
 # Abstract storage backend
@@ -21,14 +22,15 @@ class Storage(ABC):
 
 
 class S3Storage(Storage):
-    """Production backend – reads and writes objects in an S3 bucket."""
+    """Production backend - reads and writes objects in an S3 bucket."""
 
     def __init__(self, bucket: str):
         import boto3  # imported lazily so the module works without boto3 in tests
 
-        self._bucket = bucket
+        self._bucket: str = bucket
         self._s3 = boto3.client("s3")
 
+    @override
     def read(self, key: str) -> bytes | None:
         try:
             obj = self._s3.get_object(Bucket=self._bucket, Key=key)
@@ -36,6 +38,7 @@ class S3Storage(Storage):
         except self._s3.exceptions.NoSuchKey:
             return None
 
+    @override
     def write(self, key: str, data: bytes) -> None:
         self._s3.put_object(Bucket=self._bucket, Key=key, Body=data)
 
@@ -49,6 +52,7 @@ class LocalStorage(Storage):
     def _path(self, key: str) -> str:
         return os.path.join(self._base_dir, key)
 
+    @override
     def read(self, key: str) -> bytes | None:
         path = self._path(key)
         if not os.path.exists(path):
@@ -56,6 +60,7 @@ class LocalStorage(Storage):
         with open(path, "rb") as f:
             return f.read()
 
+    @override
     def write(self, key: str, data: bytes) -> None:
         path = self._path(key)
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
