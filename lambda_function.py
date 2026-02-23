@@ -9,14 +9,27 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event, context):
+def lambda_handler(event: dict[str, object] | None, context: object) -> None:
     config = get_config()
     logger.info("Lambda handler started")
+
+    force = (event or {}).get("force", False)
 
     current_dates = fetch_concert_dates(config.url)
 
     storage = S3Storage(config.bucket)
     cache = DateCache(storage, config.storage_file)
+
+    if force:
+        # Testing mode: send existing cached dates (or current if cache is empty)
+        dates_to_send = cache.dates if cache.dates else current_dates
+        logger.info(f"Force mode enabled. Sending dates for testing: {dates_to_send}")
+        service = TelegramNotificationService(
+            config.telegram_token, config.telegram_chat_id
+        )
+        service.send_notification(dates_to_send)
+        return
+
     new_dates = cache.find_new_dates(current_dates)
 
     if new_dates:
