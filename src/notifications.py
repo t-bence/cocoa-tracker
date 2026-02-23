@@ -16,7 +16,7 @@ class NotificationService(ABC):
         formatted_dates: str = "\n".join(
             [f"- {date.strftime('%Y-%m-%d')}" for date in dates]
         )
-        return f"""**Van hely kakaókoncertre!** 🚀
+        return f"""*Van hely kakaókoncertre!* 🚀
 Dátumok:
 {formatted_dates}"""
 
