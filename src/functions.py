@@ -15,11 +15,16 @@ MONTHS = {
 
 
 def get_month_number(month_name: str) -> int:
-    return MONTHS[month_name.strip().lower()]
+    try:
+        return MONTHS[month_name.strip().lower()]
+    except KeyError:
+        raise ValueError(f"Unknown month name: {month_name}")
 
 
 def get_year(year: str) -> int:
-    if year.endswith("."):
-        return int(year[:-1])
-    else:
-        return int(year)
+    # Remove trailing dot if present and convert to int
+    clean_year = year.strip().rstrip(".")
+    try:
+        return int(clean_year)
+    except ValueError:
+        raise ValueError(f"Could not parse year from script: {year}")
