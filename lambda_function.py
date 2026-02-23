@@ -9,7 +9,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event: dict[str, object] | None, context: object) -> None:
+def lambda_handler(event: dict[str, object] | None, context: object) -> None:  # pyright: ignore[reportUnusedParameter]
     config = get_config()
     logger.info("Lambda handler started")
 

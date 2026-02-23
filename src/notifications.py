@@ -1,6 +1,7 @@
 import datetime as dt
 import logging
 from abc import ABC, abstractmethod
+from typing import override
 
 import requests
 
@@ -26,6 +27,7 @@ class TelegramNotificationService(NotificationService):
         self.token: str = token
         self.chat_id: str = chat_id
 
+    @override
     def send_notification(self, dates: list[dt.date]) -> None:
         logger.info(f"Preparing to send Telegram message for {len(dates)} dates")
         message = self._format_message(dates)
