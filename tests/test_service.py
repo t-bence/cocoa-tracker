@@ -14,7 +14,7 @@ def mock_config():
         telegram_token="test_token",
         telegram_chat_id="test_chat",
         bucket="test_bucket",
-        storage_file="test_dates.json",
+        storage_file="tests/output/test_dates.json",
     )
 
 

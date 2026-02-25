@@ -126,8 +126,11 @@ class TestDateCacheUpdate:
 
 class TestDateCacheFindNewDates:
     def test_all_new_when_cache_empty(self, cache):
-        incoming = [dt.date(2025, 10, 1), dt.date(2025, 11, 1)]
-        assert set(cache.find_new_dates(incoming)) == set(incoming)
+        incoming = [dt.date(2025, 11, 1), dt.date(2025, 10, 1)]
+        assert cache.find_new_dates(incoming) == [
+            dt.date(2025, 10, 1),
+            dt.date(2025, 11, 1),
+        ]
 
     def test_no_new_when_all_cached(self, cache):
         dates = [dt.date(2025, 10, 1), dt.date(2025, 10, 15)]
@@ -144,15 +147,15 @@ class TestDateCacheFindNewDates:
         cache.update([dt.date(2025, 1, 1)])
         incoming = [
             dt.date(2025, 1, 1),
+            dt.date(2025, 8, 1),
+            dt.date(2025, 6, 1),
+            dt.date(2025, 7, 1),
+        ]
+        assert cache.find_new_dates(incoming) == [
             dt.date(2025, 6, 1),
             dt.date(2025, 7, 1),
             dt.date(2025, 8, 1),
         ]
-        assert set(cache.find_new_dates(incoming)) == {
-            dt.date(2025, 6, 1),
-            dt.date(2025, 7, 1),
-            dt.date(2025, 8, 1),
-        }
 
     def test_empty_incoming_returns_empty(self, cache):
         cache.update([dt.date(2025, 1, 1)])

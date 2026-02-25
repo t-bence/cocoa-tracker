@@ -115,7 +115,7 @@ class DateCache:
 
     def find_new_dates(self, current_dates: list[dt.date]) -> list[dt.date]:
         """Return dates in *current_dates* that are not already cached."""
-        return list(set(current_dates) - set(self._dates))
+        return sorted(list(set(current_dates) - set(self._dates)))
 
     def update(self, dates: list[dt.date]) -> None:
         """Replace the cached dates and persist them to storage."""

@@ -18,3 +18,6 @@ package/
 my_deployment_package.zip
 .pytest_cache/
 .ruff_cache/
+
+# this is the output of a unit test
+tests/output
