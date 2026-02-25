@@ -7,15 +7,17 @@ rm -rf package my_deployment_package.zip
 # Create a fresh directory for the Lambda package
 mkdir -p package
 
-# Install only runtime dependencies defined in pyproject.toml (no dev group)
-# The dot tells pip to read pyproject.toml in the current directory
-pip install --target ./package .
+# Export requirements using uv and install them into the package directory
+# This ensures we only get runtime dependencies and matches the lockfile exactly
+uv export --format requirements-txt --no-dev --no-hashes > requirements.txt
+uv pip install --target ./package -r requirements.txt
+rm requirements.txt
 
 # Package the installed dependencies
 cd package
-zip -r ../my_deployment_package.zip .
+zip -qr ../my_deployment_package.zip .
 cd ..
 
 # Add the Lambda entry point and source code
-zip my_deployment_package.zip lambda_function.py
-zip -r my_deployment_package.zip ./src
+zip -q my_deployment_package.zip lambda_function.py
+zip -qr my_deployment_package.zip ./src

@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Secrets
+.env
+
 # AWS lambda deployment package
 package/
 .DS_Store

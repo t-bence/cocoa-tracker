@@ -1,51 +1,41 @@
 import logging
 
 from src.config import get_config
-from src.notifications import TelegramNotificationService
-from src.scraper import fetch_concert_dates
-from src.storage import DateCache, S3Storage
+from src.service import create_service
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event: dict[str, object] | None, context: object) -> None:  # pyright: ignore[reportUnusedParameter]
-    config = get_config()
+def lambda_handler(event: dict[str, bool | str] | None, context: object) -> None:  # pyright: ignore[reportUnusedParameter]
     logger.info("Lambda handler started")
 
-    force = (event or {}).get("force", False)
+    try:
+        config = get_config()
+        service = create_service(config)
 
-    current_dates = fetch_concert_dates(config.url)
+        force = (event or {}).get("force", False)
+        service.run(force=force)
 
-    storage = S3Storage(config.bucket)
-    cache = DateCache(storage, config.storage_file)
-
-    if force:
-        # Testing mode: send existing cached dates (or current if cache is empty)
-        dates_to_send = cache.dates if cache.dates else current_dates
-        logger.info(f"Force mode enabled. Sending dates for testing: {dates_to_send}")
-        service = TelegramNotificationService(
-            config.telegram_token, config.telegram_chat_id
-        )
-        service.send_notification(dates_to_send)
-        return
-
-    new_dates = cache.find_new_dates(current_dates)
-
-    if new_dates:
-        logger.info(f"New dates found: {new_dates}. Sending notifications.")
-        service = TelegramNotificationService(
-            config.telegram_token, config.telegram_chat_id
-        )
-        service.send_notification(new_dates)
-        cache.update(current_dates)
-    else:
-        logger.info("No new dates found, nothing to send")
+    except Exception as e:
+        logger.exception(f"Unhandled exception in lambda_handler: {e}")
+        raise
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    logger.info("Running as script")
+    logger.info("Running locally to test notifications (force=True)")
+
+    # Use LocalStorage for local script execution to avoid needing AWS credentials
     config = get_config()
-    dates = fetch_concert_dates(config.url)
-    logger.info(f"Dates found: {dates}")
+    from src.notifications import TelegramNotificationService
+    from src.service import ConcertTrackerService
+    from src.storage import LocalStorage
+
+    storage = LocalStorage(base_dir=".")
+    notifier = TelegramNotificationService(
+        config.telegram_token, config.telegram_chat_id
+    )
+    service = ConcertTrackerService(config, storage, notifier)
+
+    service.run(force=True)
