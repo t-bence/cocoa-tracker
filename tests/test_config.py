@@ -1,18 +1,16 @@
+import pytest
+from pydantic import ValidationError
 from src.config import get_config
 
 
-def test_get_config_defaults(monkeypatch):
+def test_get_config_missing_required(monkeypatch):
     # Clear environment variables to test defaults
     monkeypatch.delenv("TELEGRAM_TOKEN", raising=False)
     monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
     monkeypatch.delenv("BUCKET", raising=False)
 
-    config = get_config()
-    assert config.telegram_token == ""
-    assert config.telegram_chat_id == ""
-    assert config.bucket == ""
-    assert config.storage_file == "dates.json"
-    assert "bfz.hu" in config.url
+    with pytest.raises(ValidationError):
+        get_config(_env_file=None)
 
 
 def test_get_config_from_env(monkeypatch):
@@ -20,7 +18,7 @@ def test_get_config_from_env(monkeypatch):
     monkeypatch.setenv("TELEGRAM_CHAT_ID", "test-chat-id")
     monkeypatch.setenv("BUCKET", "test-bucket")
 
-    config = get_config()
+    config = get_config(_env_file=None)
     assert config.telegram_token == "test-token"
     assert config.telegram_chat_id == "test-chat-id"
     assert config.bucket == "test-bucket"

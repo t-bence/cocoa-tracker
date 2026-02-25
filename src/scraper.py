@@ -43,9 +43,12 @@ def parse_html_content(html_content: str) -> list[dt.date]:
 def fetch_concert_dates(url: str) -> list[dt.date]:
     logger.info(f"Requesting URL: {url}")
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
+    except requests.RequestException as e:
+        logger.error(f"Network error while fetching URL {url}: {e}")
+        return []
     except Exception as e:
-        logger.error(f"Failed to fetch URL {url}: {e}")
+        logger.error(f"Unexpected error while fetching URL {url}: {e}")
         return []
     return parse_html_content(response.text)

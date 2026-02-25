@@ -1,21 +1,20 @@
-import os
-from dataclasses import dataclass
+from pydantic import AliasChoices
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-@dataclass(frozen=True)
-class Config:
-    telegram_token: str
-    telegram_chat_id: str
-    bucket: str
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
+
+    telegram_token: str = AliasChoices("telegram_token", "TELEGRAM_TOKEN")
+    telegram_chat_id: str = AliasChoices("telegram_chat_id", "TELEGRAM_CHAT_ID")
+    bucket: str = AliasChoices("bucket", "BUCKET")
     storage_file: str = "dates.json"
     url: str = (
         "https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/"
     )
 
 
-def get_config() -> Config:
-    return Config(
-        telegram_token=os.environ.get("TELEGRAM_TOKEN", ""),
-        telegram_chat_id=os.environ.get("TELEGRAM_CHAT_ID", ""),
-        bucket=os.environ.get("BUCKET", ""),
-    )
+def get_config(**kwargs) -> Settings:
+    return Settings(**kwargs)
