@@ -10,7 +10,7 @@ mkdir -p package
 # Export requirements using uv and install them into the package directory
 # This ensures we only get runtime dependencies and matches the lockfile exactly
 uv export --format requirements-txt --no-dev --no-hashes > requirements.txt
-uv pip install --platform manylinux2014_x86_64 --target ./package -r requirements.txt
+uv pip install --python-platform aarch64-manylinux2014 --target ./package --python-version 3.13 --only-binary=:all: --upgrade -r requirements.txt # --implementation cp
 rm requirements.txt
 
 # Package the installed dependencies

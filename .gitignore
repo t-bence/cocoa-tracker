@@ -21,3 +21,6 @@ my_deployment_package.zip
 
 # this is the output of a unit test
 tests/output
+
+# deployment package if extracted
+my_deployment_package/
