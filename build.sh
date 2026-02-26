@@ -10,7 +10,7 @@ mkdir -p package
 # Export requirements using uv and install them into the package directory
 # This ensures we only get runtime dependencies and matches the lockfile exactly
 uv export --format requirements-txt --no-dev --no-hashes > requirements.txt
-uv pip install --target ./package -r requirements.txt
+uv pip install --platform manylinux2014_x86_64 --target ./package -r requirements.txt
 rm requirements.txt
 
 # Package the installed dependencies
