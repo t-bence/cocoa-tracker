@@ -1,14 +1,14 @@
 import logging
 
-from src.config import Settings
-from src.notifications import NotificationService, TelegramNotificationService
-from src.scraper import fetch_concert_dates
-from src.storage import DateCache, S3Storage, Storage
+from src.common.config import Settings
+from src.common.notifications import NotificationService, TelegramNotificationService
+from src.common.storage import DateCache, S3Storage, Storage
+from src.modules.concerts.scraper import fetch_concert_dates
 
 logger = logging.getLogger(__name__)
 
 
-class ConcertTrackerService:
+class ConcertService:
     def __init__(
         self,
         config: Settings,
@@ -25,7 +25,6 @@ class ConcertTrackerService:
 
         if not current_dates:
             logger.info("No dates found or error during scraping")
-            # If force is true, we might still want to proceed with cached dates if we want to test notification
             if not force:
                 return
 
@@ -46,9 +45,9 @@ class ConcertTrackerService:
             logger.info("No new dates found, nothing to send")
 
 
-def create_service(config: Settings) -> ConcertTrackerService:
+def create_concert_service(config: Settings) -> ConcertService:
     storage = S3Storage(config.bucket)
     notification_service = TelegramNotificationService(
         config.telegram_token, config.telegram_chat_id
     )
-    return ConcertTrackerService(config, storage, notification_service)
+    return ConcertService(config, storage, notification_service)

@@ -13,6 +13,10 @@ class NotificationService(ABC):
     def send_notification(self, dates: list[dt.date]) -> None:
         pass
 
+    @abstractmethod
+    def send_message(self, text: str) -> None:
+        pass
+
     def _format_message(self, dates: list[dt.date]) -> str:
         formatted_dates: str = "\n".join(
             [f"- {date.strftime('%Y-%m-%d')}" for date in dates]
@@ -31,11 +35,14 @@ class TelegramNotificationService(NotificationService):
     def send_notification(self, dates: list[dt.date]) -> None:
         logger.info(f"Preparing to send Telegram message for {len(dates)} dates")
         message = self._format_message(dates)
-        url = f"https://api.telegram.org/bot{self.token}/sendMessage"
+        self.send_message(message)
 
+    @override
+    def send_message(self, text: str) -> None:
+        url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         data = {
             "chat_id": self.chat_id,
-            "text": message,
+            "text": text,
             "parse_mode": "Markdown",
         }
 

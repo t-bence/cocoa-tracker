@@ -3,9 +3,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.config import Settings
-from src.service import ConcertTrackerService
-from src.storage import LocalStorage
+from src.common.config import Settings
+from src.modules.concerts.service import ConcertService
+from src.common.storage import LocalStorage
 
 
 @pytest.fixture
@@ -14,6 +14,7 @@ def mock_config():
         telegram_token="test_token",
         telegram_chat_id="test_chat",
         bucket="test_bucket",
+        iot_thing_name="test-thing",
         storage_file="tests/output/test_dates.json",
     )
 
@@ -26,11 +27,13 @@ def temp_storage(tmp_path):
 def test_service_run_new_dates(mock_config, temp_storage, monkeypatch):
     # Setup
     mock_notification = MagicMock()
-    service = ConcertTrackerService(mock_config, temp_storage, mock_notification)
+    service = ConcertService(mock_config, temp_storage, mock_notification)
 
     # Mock scraper to return specific dates
     test_dates = sorted([dt.date(2025, 1, 1), dt.date(2025, 1, 2)])
-    monkeypatch.setattr("src.service.fetch_concert_dates", lambda url: test_dates)
+    monkeypatch.setattr(
+        "src.modules.concerts.service.fetch_concert_dates", lambda url: test_dates
+    )
 
     # Execution: First run (all dates are new)
     service.run()
@@ -49,10 +52,12 @@ def test_service_run_new_dates(mock_config, temp_storage, monkeypatch):
 
 def test_service_run_force_mode(mock_config, temp_storage, monkeypatch):
     mock_notification = MagicMock()
-    service = ConcertTrackerService(mock_config, temp_storage, mock_notification)
+    service = ConcertService(mock_config, temp_storage, mock_notification)
 
     test_dates = [dt.date(2025, 1, 1)]
-    monkeypatch.setattr("src.service.fetch_concert_dates", lambda url: test_dates)
+    monkeypatch.setattr(
+        "src.modules.concerts.service.fetch_concert_dates", lambda url: test_dates
+    )
 
     # First run to populate cache
     service.run()
