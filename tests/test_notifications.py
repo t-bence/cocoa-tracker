@@ -1,7 +1,7 @@
 import datetime as dt
 from unittest.mock import MagicMock, patch
 
-from src.notifications import TelegramNotificationService
+from src.common.notifications import TelegramNotificationService
 
 
 def test_telegram_notification_service_send_success():
@@ -10,7 +10,7 @@ def test_telegram_notification_service_send_success():
     service = TelegramNotificationService(token, chat_id)
     dates = [dt.date(2023, 10, 27)]
 
-    with patch("src.notifications.requests.post") as mock_post:
+    with patch("src.common.notifications.requests.post") as mock_post:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
@@ -30,7 +30,7 @@ def test_telegram_notification_service_send_failure():
     service = TelegramNotificationService(token, chat_id)
     dates = [dt.date(2023, 10, 27)]
 
-    with patch("src.notifications.requests.post") as mock_post:
+    with patch("src.common.notifications.requests.post") as mock_post:
         mock_post.side_effect = Exception("Network error")
 
         # Should not raise exception because of try-except block in send_notification

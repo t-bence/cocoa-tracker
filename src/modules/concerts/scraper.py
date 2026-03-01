@@ -4,7 +4,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
-from src.functions import get_month_number, get_year
+from src.common.functions import get_month_number, get_year
 
 logger = logging.getLogger()
 

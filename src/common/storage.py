@@ -25,7 +25,7 @@ class S3Storage(Storage):
     """Production backend - reads and writes objects in an S3 bucket."""
 
     def __init__(self, bucket: str):
-        import boto3  # imported lazily so the module works without boto3 in tests
+        import boto3
 
         self._bucket: str = bucket
         self._s3 = boto3.client("s3")
@@ -97,7 +97,10 @@ class DateCache:
         raw = self._storage.read(self._key)
         if raw is None:
             return []
-        return self._strings_to_dates(json.loads(raw))
+        try:
+            return self._strings_to_dates(json.loads(raw))
+        except (json.JSONDecodeError, ValueError):
+            return []
 
     def save(self) -> None:
         """Persist the current date list back to storage."""

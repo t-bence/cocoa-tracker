@@ -4,7 +4,7 @@ import datetime as dt
 
 import pytest
 
-from src.storage import DateCache, LocalStorage
+from src.common.storage import DateCache, LocalStorage
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures

@@ -10,6 +10,8 @@ class Settings:
     telegram_token: str
     telegram_chat_id: str
     bucket: str
+    iot_thing_name: str
+    iot_shadow_name: Optional[str] = None
     storage_file: str = "dates.json"
     url: str = (
         "https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/"
@@ -32,6 +34,8 @@ def get_config(env_file: Optional[str] = ".env") -> Settings:
     t_token = os.getenv("TELEGRAM_TOKEN")
     t_chat_id = os.getenv("TELEGRAM_CHAT_ID")
     bucket = os.getenv("BUCKET")
+    iot_thing = os.getenv("IOT_THING_NAME")
+    iot_shadow = os.getenv("IOT_SHADOW_NAME")
 
     missing = [
         name
@@ -39,6 +43,7 @@ def get_config(env_file: Optional[str] = ".env") -> Settings:
             "TELEGRAM_TOKEN": t_token,
             "TELEGRAM_CHAT_ID": t_chat_id,
             "BUCKET": bucket,
+            "IOT_THING_NAME": iot_thing,
         }.items()
         if not val
     ]
@@ -50,6 +55,8 @@ def get_config(env_file: Optional[str] = ".env") -> Settings:
         telegram_token=t_token,  # type: ignore
         telegram_chat_id=t_chat_id,  # type: ignore
         bucket=bucket,  # type: ignore
+        iot_thing_name=iot_thing,  # type: ignore
+        iot_shadow_name=iot_shadow,
         storage_file=os.getenv("STORAGE_FILE", "dates.json"),
         url=os.getenv(
             "URL",

@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from src.functions import get_month_number, get_year
-from src.scraper import parse_html_content
+from src.common.functions import get_month_number, get_year
+from src.modules.concerts.scraper import parse_html_content
 
 
 def test_get_month_number():
