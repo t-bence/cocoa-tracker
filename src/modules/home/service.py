@@ -28,12 +28,15 @@ class HomeService:
             payload = json.loads(streaming_body.read())
 
             state = payload.get("state", {}).get("reported", {})
-            temp = state.get("temperature", "N/A")
-            hum = state.get("humidity", "N/A")
+            bedroom_temperature = state.get("bedroom_temperature", "N/A")
+            bedroom_humidity = state.get("bedroom_humidity", "N/A")
+
+            livingroom_temperature = state.get("livingroom_temperature", "N/A")
+            livingroom_humidity = state.get("livingroom_humidity", "N/A")
 
             # Metadata for timestamp
             metadata = payload.get("metadata", {}).get("reported", {})
-            temp_meta = metadata.get("temperature", {})
+            temp_meta = metadata.get("bedroom_temperature", {})
             timestamp = temp_meta.get("timestamp")
 
             if timestamp:
@@ -43,9 +46,14 @@ class HomeService:
                 last_change = "Unknown"
 
             message = (
-                f"*Home Status* 🏠\n"
-                f"Temperature: {temp}°C\n"
-                f"Humidity: {hum}%\n"
+                f"*Bedroom Status* 🏠\n"
+                f"Temperature: {bedroom_temperature}°C\n"
+                f"Humidity: {bedroom_humidity}%\n"
+                "\n"
+                f"*Living Room Status* 🏠\n"
+                f"Temperature: {livingroom_temperature}°C\n"
+                f"Humidity: {livingroom_humidity}%\n"
+                "\n"
                 f"Last update: {last_change}"
             )
 
