@@ -26,8 +26,15 @@ def test_home_service_run_success(mock_iot_client_factory, mock_config):
 
     # Mock IoT shadow response
     payload = {
-        "state": {"reported": {"temperature": 22.5, "humidity": 45}},
-        "metadata": {"reported": {"temperature": {"timestamp": 1700000000}}},
+        "state": {
+            "reported": {
+                "bedroom_temperature": 22.5,
+                "bedroom_humidity": 45,
+                "livingroom_temperature": 23.4,
+                "livingroom_humidity": 54,
+            }
+        },
+        "metadata": {"reported": {"bedroom_temperature": {"timestamp": 1700000000}}},
     }
     mock_response = {"payload": MagicMock()}
     mock_response["payload"].read.return_value = json.dumps(payload).encode()
@@ -45,6 +52,7 @@ def test_home_service_run_success(mock_iot_client_factory, mock_config):
     )
     mock_notification.send_message.assert_called_once()
     message = mock_notification.send_message.call_args[0][0]
+
     assert "22.5°C" in message
     assert "45%" in message
     assert "2023-11-14" in message  # 1700000000 is 2023-11-14
