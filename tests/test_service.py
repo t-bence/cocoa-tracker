@@ -5,7 +5,7 @@ import pytest
 
 from src.common.config import Settings
 from src.modules.concerts.service import ConcertService
-from src.common.storage import LocalStorage
+from tests.conftest import LocalStorage
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def temp_storage(tmp_path):
 def test_service_run_new_dates(mock_config, temp_storage, monkeypatch):
     # Setup
     mock_notification = MagicMock()
-    service = ConcertService(mock_config, temp_storage, mock_notification)
+    service = ConcertService(mock_config, mock_notification, temp_storage)
 
     # Mock scraper to return specific dates
     test_dates = sorted([dt.date(2025, 1, 1), dt.date(2025, 1, 2)])
@@ -52,7 +52,7 @@ def test_service_run_new_dates(mock_config, temp_storage, monkeypatch):
 
 def test_service_run_force_mode(mock_config, temp_storage, monkeypatch):
     mock_notification = MagicMock()
-    service = ConcertService(mock_config, temp_storage, mock_notification)
+    service = ConcertService(mock_config, mock_notification, temp_storage)
 
     test_dates = [dt.date(2025, 1, 1)]
     monkeypatch.setattr(

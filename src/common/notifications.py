@@ -55,3 +55,18 @@ class TelegramNotificationService(NotificationService):
             logger.info(f"Telegram response status: {response.status_code}")
         except Exception as e:
             logger.error(f"Failed to send Telegram message: {e}")
+
+
+class ConsoleNotificationService(NotificationService):
+    """Notification service that prints to the console (standard output)."""
+
+    @override
+    def send_notification(self, dates: list[dt.date]) -> None:
+        message = self._format_message(dates)
+        self.send_message(message)
+
+    @override
+    def send_message(self, text: str) -> None:
+        print("\n--- NOTIFICATION ---")
+        print(text)
+        print("--------------------\n")

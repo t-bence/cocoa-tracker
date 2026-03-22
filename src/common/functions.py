@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 MONTHS = {
     "january": 1,
     "february": 2,
@@ -12,6 +14,15 @@ MONTHS = {
     "november": 11,
     "december": 12,
 }
+
+
+class BaseService(ABC):
+    """Base interface for all bot services."""
+
+    @abstractmethod
+    def run(self, **kwargs: object) -> None:
+        """Execute the service logic."""
+        pass
 
 
 def get_month_number(month_name: str) -> int:

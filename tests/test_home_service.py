@@ -1,5 +1,5 @@
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -8,7 +8,14 @@ from src.modules.home.service import HomeService
 
 
 @pytest.fixture
-def mock_config():
+def mock_config(monkeypatch):
+    # Ensure env vars don't override the explicit arguments
+    monkeypatch.delenv("TELEGRAM_TOKEN", raising=False)
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    monkeypatch.delenv("BUCKET", raising=False)
+    monkeypatch.delenv("IOT_THING_NAME", raising=False)
+    monkeypatch.delenv("IOT_SHADOW_NAME", raising=False)
+
     return Settings(
         telegram_token="test_token",
         telegram_chat_id="test_chat",
@@ -18,13 +25,11 @@ def mock_config():
     )
 
 
-@patch("src.modules.home.service.boto3.client")
-def test_home_service_run_success(mock_iot_client_factory, mock_config):
-    # Setup
+def test_home_service_behavior_success(mock_config):
+    # Setup: Mock IoT client
     mock_iot_client = MagicMock()
-    mock_iot_client_factory.return_value = mock_iot_client
 
-    # Mock IoT shadow response
+    # Behavior: Define what the shadow returns
     payload = {
         "state": {
             "reported": {
@@ -41,18 +46,38 @@ def test_home_service_run_success(mock_iot_client_factory, mock_config):
     mock_iot_client.get_thing_shadow.return_value = mock_response
 
     mock_notification = MagicMock()
-    service = HomeService(mock_config, mock_notification)
+    service = HomeService(mock_config, mock_notification, iot_client=mock_iot_client)
 
     # Execution
     service.run()
 
-    # Validation
+    # Behavioral Validation:
+    # 1. Did we communicate with IoT correctly?
     mock_iot_client.get_thing_shadow.assert_called_once_with(
         thingName="test-thing", shadowName="test-shadow"
     )
+    # 2. Was the user notified with the correct information?
     mock_notification.send_message.assert_called_once()
     message = mock_notification.send_message.call_args[0][0]
 
     assert "22.5°C" in message
     assert "45%" in message
-    assert "2023-11-14" in message  # 1700000000 is 2023-11-14
+    assert "2023-11-14" in message
+
+
+def test_home_service_behavior_failure(mock_config):
+    # Setup: Mock IoT client to fail
+    mock_iot_client = MagicMock()
+    mock_iot_client.get_thing_shadow.side_effect = Exception("IoT Connection Error")
+
+    mock_notification = MagicMock()
+    service = HomeService(mock_config, mock_notification, iot_client=mock_iot_client)
+
+    # Execution
+    service.run()
+
+    # Behavioral Validation: Did the user get an error message?
+    mock_notification.send_message.assert_called_once()
+    message = mock_notification.send_message.call_args[0][0]
+    assert "Error fetching home status" in message
+    assert "IoT Connection Error" in message

@@ -1,21 +1,8 @@
 import os
-from dataclasses import dataclass
 from typing import Optional
 
-from dotenv import load_dotenv
-
-
-@dataclass
-class Settings:
-    telegram_token: str
-    telegram_chat_id: str
-    bucket: str
-    iot_thing_name: str
-    iot_shadow_name: Optional[str] = None
-    storage_file: str = "dates.json"
-    url: str = (
-        "https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/"
-    )
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class ConfigError(Exception):
@@ -24,42 +11,45 @@ class ConfigError(Exception):
     pass
 
 
+class Settings(BaseSettings):
+    """
+    Project settings and configuration using Pydantic.
+    Environment variables are automatically mapped to these fields.
+    """
+
+    telegram_token: str = Field(alias="TELEGRAM_TOKEN")
+    telegram_chat_id: str = Field(alias="TELEGRAM_CHAT_ID")
+    bucket: str = Field(alias="BUCKET")
+    iot_thing_name: str = Field(alias="IOT_THING_NAME")
+    iot_shadow_name: Optional[str] = Field(default=None, alias="IOT_SHADOW_NAME")
+    storage_file: str = Field(default="dates.json", alias="STORAGE_FILE")
+    url: str = Field(
+        default="https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/",
+        alias="URL",
+    )
+    google_service_account_info: Optional[str] = Field(
+        default=None, alias="GOOGLE_SERVICE_ACCOUNT_INFO"
+    )
+    google_calendar_id: str = Field(default="primary", alias="GOOGLE_CALENDAR_ID")
+    openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
+    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
+    openrouter_base_url: str = Field(
+        default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL"
+    )
+
+    model_config = SettingsConfigDict(
+        env_file_encoding="utf-8", extra="ignore", populate_by_name=True
+    )
+
+
 def get_config(env_file: Optional[str] = ".env") -> Settings:
     """
     Load configuration from environment variables and .env file.
     """
-    if env_file:
-        load_dotenv(env_file)
-
-    t_token = os.getenv("TELEGRAM_TOKEN")
-    t_chat_id = os.getenv("TELEGRAM_CHAT_ID")
-    bucket = os.getenv("BUCKET")
-    iot_thing = os.getenv("IOT_THING_NAME")
-    iot_shadow = os.getenv("IOT_SHADOW_NAME")
-
-    missing = [
-        name
-        for name, val in {
-            "TELEGRAM_TOKEN": t_token,
-            "TELEGRAM_CHAT_ID": t_chat_id,
-            "BUCKET": bucket,
-            "IOT_THING_NAME": iot_thing,
-        }.items()
-        if not val
-    ]
-
-    if missing:
-        raise ConfigError(f"Missing required configuration: {', '.join(missing)}")
-
-    return Settings(
-        telegram_token=t_token,  # type: ignore
-        telegram_chat_id=t_chat_id,  # type: ignore
-        bucket=bucket,  # type: ignore
-        iot_thing_name=iot_thing,  # type: ignore
-        iot_shadow_name=iot_shadow,
-        storage_file=os.getenv("STORAGE_FILE", "dates.json"),
-        url=os.getenv(
-            "URL",
-            "https://bfz.hu/en/concerts-tickets/concerts-and-festivals/cocoa-concerts/",
-        ),
-    )
+    try:
+        # If env_file is provided and exists, use it. Otherwise, rely on env vars.
+        if env_file and os.path.exists(env_file):
+            return Settings(_env_file=env_file)
+        return Settings()
+    except Exception as e:
+        raise ConfigError(f"Configuration error: {e}") from e
