@@ -1,29 +1,35 @@
 import json
 import logging
 from datetime import datetime
+from typing import Any
 
 import boto3
 
+from src.common.base import BaseService
 from src.common.config import Settings
 from src.common.notifications import NotificationService, TelegramNotificationService
 
 logger = logging.getLogger(__name__)
 
 
-class HomeService:
-    def __init__(self, config: Settings, notification_service: NotificationService):
-        self.config = config
-        self.notification_service = notification_service
-        self.iot_client = boto3.client("iot-data")
+class HomeService(BaseService):
+    def __init__(
+        self,
+        config: Settings,
+        notification_service: NotificationService,
+        iot_client: Any = None,
+    ):
+        super().__init__(config, notification_service)
+        self.iot_client = iot_client or boto3.client("iot-data")
 
-    def run(self) -> None:
+    def run(self, **kwargs: Any) -> None:
         logger.info(f"Fetching shadow for thing: {self.config.iot_thing_name}")
         try:
-            kwargs = {"thingName": self.config.iot_thing_name}
+            shadow_kwargs = {"thingName": self.config.iot_thing_name}
             if self.config.iot_shadow_name:
-                kwargs["shadowName"] = self.config.iot_shadow_name
+                shadow_kwargs["shadowName"] = self.config.iot_shadow_name
 
-            response = self.iot_client.get_thing_shadow(**kwargs)
+            response = self.iot_client.get_thing_shadow(**shadow_kwargs)
             streaming_body = response["payload"]
             payload = json.loads(streaming_body.read())
 
@@ -66,8 +72,12 @@ class HomeService:
             )
 
 
-def create_home_service(config: Settings) -> HomeService:
-    notification_service = TelegramNotificationService(
+def create_home_service(
+    config: Settings,
+    notification_service: NotificationService | None = None,
+    iot_client: Any = None,
+) -> HomeService:
+    notification_service = notification_service or TelegramNotificationService(
         config.telegram_token, config.telegram_chat_id
     )
-    return HomeService(config, notification_service)
+    return HomeService(config, notification_service, iot_client=iot_client)

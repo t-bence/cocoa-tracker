@@ -24,3 +24,4 @@ tests/output
 
 # deployment package if extracted
 my_deployment_package/
+.mypy_cache/

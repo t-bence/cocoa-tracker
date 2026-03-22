@@ -1,5 +1,7 @@
 import logging
+from typing import Any
 
+from src.common.base import BaseService
 from src.common.config import Settings
 from src.common.notifications import NotificationService, TelegramNotificationService
 from src.common.storage import DateCache, S3Storage, Storage
@@ -8,18 +10,18 @@ from src.modules.concerts.scraper import fetch_concert_dates
 logger = logging.getLogger(__name__)
 
 
-class ConcertService:
+class ConcertService(BaseService):
     def __init__(
         self,
         config: Settings,
-        storage: Storage,
         notification_service: NotificationService,
+        storage: Storage,
     ):
-        self.config = config
+        super().__init__(config, notification_service)
         self.cache = DateCache(storage, config.storage_file)
-        self.notification_service = notification_service
 
-    def run(self, force: bool | str = False) -> None:
+    def run(self, **kwargs: Any) -> None:
+        force = kwargs.get("force", False)
         logger.info("Starting concert tracker run")
         current_dates = fetch_concert_dates(self.config.url)
 
@@ -45,9 +47,13 @@ class ConcertService:
             logger.info("No new dates found, nothing to send")
 
 
-def create_concert_service(config: Settings) -> ConcertService:
-    storage = S3Storage(config.bucket)
-    notification_service = TelegramNotificationService(
+def create_concert_service(
+    config: Settings,
+    storage: Storage | None = None,
+    notification_service: NotificationService | None = None,
+) -> ConcertService:
+    storage = storage or S3Storage(config.bucket)
+    notification_service = notification_service or TelegramNotificationService(
         config.telegram_token, config.telegram_chat_id
     )
-    return ConcertService(config, storage, notification_service)
+    return ConcertService(config, notification_service, storage)

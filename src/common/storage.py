@@ -1,6 +1,5 @@
 import datetime as dt
 import json
-import os
 from abc import ABC, abstractmethod
 from typing import override
 
@@ -43,29 +42,18 @@ class S3Storage(Storage):
         self._s3.put_object(Bucket=self._bucket, Key=key, Body=data)
 
 
-class LocalStorage(Storage):
-    """Local-filesystem backend - useful for unit tests and local development."""
-
-    def __init__(self, base_dir: str = "."):
-        self._base_dir = base_dir
-
-    def _path(self, key: str) -> str:
-        return os.path.join(self._base_dir, key)
+class DummyStorage(Storage):
+    """Storage backend that does not persist anything.
+    Reading always returns None, and writing does nothing.
+    """
 
     @override
     def read(self, key: str) -> bytes | None:
-        path = self._path(key)
-        if not os.path.exists(path):
-            return None
-        with open(path, "rb") as f:
-            return f.read()
+        return None
 
     @override
     def write(self, key: str, data: bytes) -> None:
-        path = self._path(key)
-        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-        with open(path, "wb") as f:
-            f.write(data)
+        pass
 
 
 # ---------------------------------------------------------------------------
