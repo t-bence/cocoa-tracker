@@ -9,7 +9,6 @@ dependencies = [
     "requests>=2.32.5",
     "python-dotenv>=1.0.1",
     "pip>=26.0.1",
-    "boto3>=1.40.30",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.7.0",
     "google-api-python-client>=2.162.0",
